@@ -102,22 +102,22 @@ component elevator_controller_fsm is
           i_reset   : in STD_LOGIC;
           i_stop    : in STD_LOGIC;
           i_up_down : in STD_LOGIC;
-          o_floor   : out STD_LOGIC_VECTOR (7 downto 0)
+          o_floor   : out STD_LOGIC_VECTOR (3 downto 0)
          );
     end component elevator_controller_fsm;
 
-component TDM4 is
-    generic (constant k_WIDTH : natural := 4);
-    Port (i_clk    : in std_logic;
-          i_reset  : in std_logic;
-          i_D3     : in std_logic_vector (k_width - 1 downto 0);
-          i_D2     : in std_logic_vector (k_width - 1 downto 0);
-          i_D1     : in std_logic_vector (k_width - 1 downto 0);
-          i_D0     : in std_logic_vector (k_width - 1 downto 0);
-          o_data   : out std_logic_vector (k_width - 1 downto 0);
-          o_sel    : out std_logic_vector (3 downto 0)
-          );
-     end component TDM4;
+--component TDM4 is
+--    generic (constant k_WIDTH : natural := 4);
+--    Port (i_clk    : in std_logic;
+--          i_reset  : in std_logic;
+--          i_D3     : in std_logic_vector (k_width - 1 downto 0);
+--          i_D2     : in std_logic_vector (k_width - 1 downto 0);
+--          i_D1     : in std_logic_vector (k_width - 1 downto 0);
+--          i_D0     : in std_logic_vector (k_width - 1 downto 0);
+--          o_data   : out std_logic_vector (k_width - 1 downto 0);
+--          o_sel    : out std_logic_vector (3 downto 0)
+--          );
+     --end component TDM4;
      
 component clock_divider is
     generic (constant k_DIV : natural := 2);
@@ -130,10 +130,10 @@ component clock_divider is
 	-- declare components and signals
 	signal w_7SD_EN_n : std_logic;
 	signal w_clk      : std_logic;
-	signal w_clk2     : std_logic;
-	signal w_floor    : std_logic_vector(7 downto 0);
-	signal w_data     : std_logic_vector (3 downto 0);
-	signal w_sel      : std_logic_vector (3 downto 0);
+--	signal w_clk2     : std_logic;
+	signal w_floor    : std_logic_vector(3 downto 0);
+--	signal w_data     : std_logic_vector (3 downto 0);
+--	signal w_sel      : std_logic_vector (3 downto 0);
 
 begin
 	-- PORT MAPS ----------------------------------------
@@ -146,43 +146,43 @@ elevator_controller_fsm_inst : elevator_controller_fsm
        o_floor   => w_floor
     );
     
-TDM4_inst : TDM4
-   port map (i_clk   => w_clk2,
-             i_reset => btnC,
-             i_D3    => w_floor(7 downto 4),
-             i_D2    => w_floor(3 downto 0),
-             i_D1    => w_floor(3 downto 0),
-             i_D0    => w_floor(7 downto 4),
-             o_data  => w_data,
-             o_sel   => w_sel
-             );
+--TDM4_inst : TDM4
+--   port map (i_clk   => w_clk2,
+--             i_reset => btnC,
+--             i_D3    => w_floor(7 downto 4),
+--             i_D2    => w_floor(3 downto 0),
+--             i_D1    => w_floor(3 downto 0),
+--             i_D0    => w_floor(7 downto 4),
+--             o_data  => w_data,
+--             o_sel   => w_sel
+--             );
              
 sevenSegDecoder_inst : sevenSegDecoder
    port map (
-   i_D => w_data,
+   i_D => w_floor,
    o_S => seg
    );
    
 
 clkdiv_inst : clock_divider
-    generic map (k_DIV => 25000000)
+    generic map (k_DIV => 50000000)
     port map (
        i_clk   => clk,
        i_reset => btnL or btnU,
        o_clk   => w_clk
        );
 
-clkdiv_inst2 : clock_divider
-    generic map (k_DIV => 100000)
-    port map (
-       i_clk   => clk,
-       i_reset => btnC,
-       o_clk   => w_clk2
-       );
+--clkdiv_inst2 : clock_divider
+--    generic map (k_DIV => 100000)
+--    port map (
+--       i_clk   => clk,
+--       i_reset => btnC,
+--       o_clk   => w_clk2
+--       );
 	
 	
 	-- CONCURRENT STATEMENTS ----------------------------
-	
+	an <= (0 => w_7SD_EN_n, others => '1');
 	-- LED 15 gets the FSM slow clock signal. The rest are grounded.
 	led(15) <= w_clk;
 	led(14 downto 0) <= "000000000000000";
@@ -190,10 +190,10 @@ clkdiv_inst2 : clock_divider
 	-- leave unused switches UNCONNECTED. Ignore any warnings this causes.
 	
 	-- wire up active-low 7SD anodes (an) as required
-	w_7SD_EN_n <= '1';
+	--w_7SD_EN_n <= '1';
 	-- Tie any unused anodes to power ('1') to keep them off
-	an(3) <= '0' when w_sel = "0111" or w_sel = "1110" else '1';
-	an(2) <= '0' when w_sel = "1011" or w_sel = "1101" else '1';
-	an(1) <= w_7SD_EN_n;
-	an(0) <= w_7SD_EN_n;
+--	an(3) <= '0' when w_sel = "0111" or w_sel = "1110" else '1';
+--	an(2) <= '0' when w_sel = "1011" or w_sel = "1101" else '1';
+--	an(1) <= w_7SD_EN_n;
+--	an(0) <= w_7SD_EN_n;
 end top_basys3_arch;
